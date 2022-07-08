@@ -1,25 +1,22 @@
 version: 2.1
-executors:  
+executors:
   docker-publisher:
-    environment: 
-      IMAGE_NAME: mukuntharya2022/gosimple
-      DOCKERHUB_PASS: $dockerpass
-      DOCKERHUB_USERNAME: $dockeruser
+    environment:
+      IMAGE_NAME: jonathancardoso/building-on-ci
     docker:
       - image: circleci/buildpack-deps:stretch
-
 jobs:
   build:
     executor: docker-publisher
     steps:
-      - checkout 
+      - checkout
       - setup_remote_docker
       - run:
-          name: build docker image
+          name: Build Docker image
           command: |
-            docker build -t $IMAGE_NAME:v2 .
+            docker build -t $IMAGE_NAME:latest .
       - run:
-          name: archive the docker image
+          name: Archive Docker image
           command: docker save -o image.tar $IMAGE_NAME
       - persist_to_workspace:
           root: .
@@ -30,18 +27,15 @@ jobs:
     steps:
       - attach_workspace:
           at: /tmp/workspace
-
-      - setup_remote_docker     
+      - setup_remote_docker
       - run:
-          name: publish latest image to docker hub
+          name: Load archived Docker image
           command: docker load -i /tmp/workspace/image.tar
-      - run: 
-          name: publish image to docker hub
+      - run:
+          name: Publish Docker Image to Docker Hub
           command: |
             echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-            docker push image $IMAGE_NAME:v2
-
-
+            docker push $IMAGE_NAME:latest
 workflows:
   version: 2
   build-master:
@@ -51,12 +45,8 @@ workflows:
             branches:
               only: master
       - publish-latest:
-          requires: 
+          requires:
             - build
           filters:
             branches:
-              only: master            
-
-
-          
-
+              only: master
