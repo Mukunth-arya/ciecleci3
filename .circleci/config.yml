@@ -33,7 +33,7 @@ jobs:
 
       - setup_remote_docker     
       - run:
-           name: publish latest image to docker hub
+          name: publish latest image to docker hub
           command: docker load -i /tmp/workspace/image.tar
       - run: 
           name: publish image to docker hub
